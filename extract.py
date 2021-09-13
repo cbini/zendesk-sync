@@ -3,7 +3,7 @@ import json
 import os
 import pathlib
 import traceback
-from datetime import date
+from datetime import datetime, timedelta, timezone
 
 from dotenv import load_dotenv
 from google.cloud import storage
@@ -20,6 +20,11 @@ PROJECT_PATH = PROJECT_PATH = pathlib.Path(__file__).absolute().parent
 
 
 def main():
+    today = datetime.now(tz=timezone.utc).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    query_date = today - timedelta(days=3)
+
     zenpy_client = Zenpy(
         email=ZENDESK_EMAIL, token=ZENDESK_TOKEN, subdomain=ZENDESK_SUBDOMAIN
     )
@@ -54,17 +59,23 @@ def main():
 
     # current data at ticket_metrics endpoint
     print("Downloading all current ticket metrics...")
-    current_data = [tm.to_dict() for tm in zenpy_client.ticket_metrics()]
+    all_data = [tm.to_dict() for tm in zenpy_client.ticket_metrics()]
+    filtered_data = [
+        d
+        for d in all_data
+        if datetime.fromisoformat(d["updated_at"].replace("Z", "+00:00")) >= query_date
+    ]
 
-    current_filepath = data_path / f"{date.today().isoformat()}.json.gz"
-    with gzip.open(current_filepath, "wt", encoding="utf-8") as f:
-        json.dump(current_data, f)
-    print(f"\tSaved to {current_filepath}!")
+    # save file
+    data_filepath = data_path / f"{query_date.isoformat()}.json.gz"
+    with gzip.open(data_filepath, "wt", encoding="utf-8") as f:
+        json.dump(filtered_data, f)
+    print(f"\tSaved to {data_filepath}!")
 
     # push to GCS
-    destination_blob_name = "zendesk/" + "/".join(current_filepath.parts[-2:])
+    destination_blob_name = "zendesk/" + "/".join(data_filepath.parts[-2:])
     blob = gcs_bucket.blob(destination_blob_name)
-    blob.upload_from_filename(current_filepath)
+    blob.upload_from_filename(data_filepath)
     print(f"\tUploaded to {destination_blob_name}!")
 
 
