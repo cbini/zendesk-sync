@@ -28,5 +28,5 @@ rsa==4.7.2
 six==1.16.0
 tomli==1.2.1
 typing-extensions==3.10.0.2
-urllib3==1.26.6
+urllib3==1.26.7
 zenpy==2.0.24
