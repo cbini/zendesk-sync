@@ -12,7 +12,7 @@ zenpy = "^2.0.24"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
-black = "^21.9b0"
+black = "^21.11b0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
