@@ -8,9 +8,7 @@ authors = [
 license-expression = "MIT"
 dependencies = [
     "google-cloud-storage>=2.2.1",
-    "zenpy>=2.0.24",
-    "setuptools>=60.10.0",
-]
+    "zenpy>=2.0.24"]
 requires-python = ">=3.9"
 
 [project.urls]
